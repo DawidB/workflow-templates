@@ -1,0 +1,76 @@
+name: Template for unit and integration tests execution
+
+on:
+  workflow_call:
+    inputs:
+      execute_integration_tests:
+        type: boolean
+        required: true
+      dotnet_version:
+        type: string
+        required: false
+        default: 3.x
+      unit_test_filter:
+        type: string
+        required: false
+        default: UnitTests
+      integration_test_filter:
+        type: string
+        required: false
+        default: IntegrationTests
+      integration_test_dir:
+        type: string
+        required: false
+        default: "IntegrationTests/"
+
+    secrets:
+      integration_tests_appsettings:
+        required: true
+
+jobs:
+  unitTests:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: ${{ inputs.dotnet_version }}
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Run Unit Tests
+      run: dotnet test --no-build --verbosity normal --filter ${{ inputs.unit_test_filter }}
+        
+  integrationTests:
+    name: Run integration tests
+    if: ${{ inputs.execute_integration_tests }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Create AppSettings.json
+      id: create-json
+      uses: jsdaniell/create-json@v1
+      with:
+        name: "appsettings.json"
+        json: ${{ secrets.integration_tests_appsettings }}
+        dir: ${{ inputs.integration_test_dir }}
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: ${{ inputs.dotnet_version }}
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v2
+    - name: Install & run Azurite
+      run: npm install -g azurite
+    - name: Run Azurite in Background
+      shell: bash
+      run: azurite-blob &
+    - name: Run Integration Tests
+      run: dotnet test --no-build --verbosity normal --filter ${{ inputs.integration_test_filter }}

@@ -1,0 +1,54 @@
+name: Template for .NET app deployment to Azure Function
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+      dotnet_version:
+        type: string
+        required: false
+        default: 3.x
+      project_filepath:
+        description: Relative path to project file (i.e. 'WebApp/WebApp.csproj')
+        type: string
+        required: true
+      app_name:
+        description: Azure Function resource name
+        type: string
+        required: true
+      slot_name:
+        description: Target slot for Azure Function deployment
+        type: string
+        required: false
+        default: Production
+
+    secrets:
+      azureappservice_publishprofile:
+        required: true
+
+jobs:
+  deploy:
+    name: Build and deploy app
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:    
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: ${{ inputs.dotnet_version }}
+    - name: Build and publish
+      shell: bash
+      run: |
+        pushd './.'
+        dotnet publish --configuration Release --output ./output ${{ inputs.project_filepath }}
+        popd
+    - name: Deploy Azure Functions
+      uses: Azure/functions-action@v1
+      with:
+        app-name: ${{ inputs.app_name }}
+        slot-name: ${{ inputs.slot_name }}
+        package: './output'
+        publish-profile: ${{ secrets.azureappservice_publishprofile }}
