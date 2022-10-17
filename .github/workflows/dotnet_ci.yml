@@ -51,11 +51,14 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Create AppSettings.json
-      shell: bash
+      shell: pwsh
       run: |
         cd ${{ inputs.integration_test_dir }}
-        echo "${{ secrets.integration_tests_appsettings }}" > "appsettings.json"
-        cat "appsettings.json"
+        $contents = ${{ secrets.integration_tests_appsettings }}
+        $contents | ConvertTo-Json | Out-File "appsettings.json"
+#        cd ${{ inputs.integration_test_dir }}
+#        echo "${{ secrets.integration_tests_appsettings }}" > "appsettings.json"
+#        cat "appsettings.json"
 #       uses: jsdaniell/create-json@v1
 #       with:
 #         name: "appsettings.json"
