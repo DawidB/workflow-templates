@@ -55,21 +55,10 @@ jobs:
       run: |
         cd ${{ inputs.integration_test_dir }}
         $contents = @"
-        ${{ secrets.integration_tests_appsettings }}
+          ${{ secrets.integration_tests_appsettings }}
         "@
-        $contents
         $json = $contents | ConvertFrom-Json
-        $json
         $json | ConvertTo-Json | Out-File "appsettings.json"
-        Get-Content "appsettings.json"
-#        cd ${{ inputs.integration_test_dir }}
-#        echo "${{ secrets.integration_tests_appsettings }}" > "appsettings.json"
-#        cat "appsettings.json"
-#       uses: jsdaniell/create-json@v1
-#       with:
-#         name: "appsettings.json"
-#         json: ${{ secrets.integration_tests_appsettings }}
-#         dir: ${{ inputs.integration_test_dir }}
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
       with:
