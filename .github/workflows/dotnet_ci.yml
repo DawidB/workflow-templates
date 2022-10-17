@@ -54,7 +54,9 @@ jobs:
       shell: pwsh
       run: |
         cd ${{ inputs.integration_test_dir }}
-        $contents = @"${{ secrets.integration_tests_appsettings }}"@
+        $contents = @"
+        ${{ secrets.integration_tests_appsettings }}
+        "@
         $contents
         $json = $contents | ConvertFrom-Json
         $json
