@@ -55,6 +55,7 @@ jobs:
       run: |
         cd ${{ inputs.integration_test_dir }}
         echo "${{ secrets.integration_tests_appsettings }}" > "appsettings.json"
+        cat "appsettings.json"
 #       uses: jsdaniell/create-json@v1
 #       with:
 #         name: "appsettings.json"
