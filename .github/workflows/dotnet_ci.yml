@@ -54,7 +54,7 @@ jobs:
       shell: bash
       run: |
         cd ${{ inputs.integration_test_dir }}
-        ${{ secrets.integration_tests_appsettings }} > appsettings.json
+        echo "${{ secrets.integration_tests_appsettings }}" > "appsettings.json"
 #       uses: jsdaniell/create-json@v1
 #       with:
 #         name: "appsettings.json"
