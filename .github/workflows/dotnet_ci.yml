@@ -51,12 +51,15 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Create AppSettings.json
-      id: create-json
-      uses: jsdaniell/create-json@v1
-      with:
-        name: "appsettings.json"
-        json: ${{ secrets.integration_tests_appsettings }}
-        dir: ${{ inputs.integration_test_dir }}
+      shell: bash
+      run: |
+        cd ${{ inputs.integration_test_dir }}
+        ${{ secrets.integration_tests_appsettings }} > appsettings.json
+#       uses: jsdaniell/create-json@v1
+#       with:
+#         name: "appsettings.json"
+#         json: ${{ secrets.integration_tests_appsettings }}
+#         dir: ${{ inputs.integration_test_dir }}
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
       with:
@@ -66,7 +69,7 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Setup Node.js environment
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
     - name: Install & run Azurite
       run: npm install -g azurite
     - name: Run Azurite in Background
