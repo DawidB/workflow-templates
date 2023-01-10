@@ -9,7 +9,11 @@ on:
       dotnet_version:
         type: string
         required: false
-        default: 3.x
+        default: 3.x        
+      dotnet_test_args:
+        type: string
+        required: false
+        default: "--no-build --verbosity normal"
       unit_test_filter:
         type: string
         required: false
@@ -22,10 +26,10 @@ on:
         type: string
         required: false
         default: "IntegrationTests/"
-      dotnet_test_args:
-        type: string
+      job_timeout:
+        type: number
         required: false
-        default: "--no-build --verbosity normal"
+        default: 60
 
     secrets:
       integration_tests_appsettings:
@@ -35,6 +39,7 @@ jobs:
   unitTests:
     name: Run unit tests
     runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.job_timeout }}
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET
@@ -52,6 +57,7 @@ jobs:
     name: Run integration tests
     if: ${{ inputs.execute_integration_tests }}
     runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.job_timeout }}
     steps:
     - uses: actions/checkout@v3
     - name: Create AppSettings.json
