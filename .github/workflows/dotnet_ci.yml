@@ -22,6 +22,10 @@ on:
         type: string
         required: false
         default: "IntegrationTests/"
+      dotnet_test_args:
+        type: string
+        required: false
+        default: "--no-build --verbosity normal"
 
     secrets:
       integration_tests_appsettings:
@@ -42,7 +46,7 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Run Unit Tests
-      run: dotnet test --no-build --verbosity normal --filter ${{ inputs.unit_test_filter }}
+      run: dotnet test ${{ inputs.dotnet_test_args }} --filter ${{ inputs.unit_test_filter }}
         
   integrationTests:
     name: Run integration tests
@@ -75,4 +79,4 @@ jobs:
       shell: bash
       run: azurite-blob &
     - name: Run Integration Tests
-      run: dotnet test --no-build --verbosity normal --filter ${{ inputs.integration_test_filter }}
+      run: dotnet test ${{ inputs.dotnet_test_args }} --filter ${{ inputs.integration_test_filter }}
