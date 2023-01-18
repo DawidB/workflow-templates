@@ -126,12 +126,16 @@ jobs:
     timeout-minutes: ${{ inputs.job_timeout }}
     steps:
 #     - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
+      - name: Download unit tests coverage report
+        uses: actions/download-artifact@v3
         with:
           name: unit-tests-coverage
-      - uses: actions/download-artifact@v3
+      - name: Download integration tests coverage report
+        uses: actions/download-artifact@v3
         with:
           name: integration-tests-coverage
+      - name: Display structure of downloaded files
+        run: ls -R
 #TODO: move to composite action
       - name: Code coverage summary report
         uses: irongut/CodeCoverageSummary@v1.3.0
