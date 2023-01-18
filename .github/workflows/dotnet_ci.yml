@@ -57,20 +57,21 @@ jobs:
       run: dotnet test ${{ inputs.dotnet_test_args }} --filter ${{ inputs.unit_test_filter }}      
               
 #TODO: move to composite action
-    - name: Code Coverage Summary Report
+    - name: Code coverage summary report
       uses: irongut/CodeCoverageSummary@v1.3.0
       with:
         filename: coverage/*/coverage.cobertura.xml
         badge: true
         format: 'markdown'
         output: 'both'
-    - name: Add Coverage PR Comment
+    - name: Add coverage PR comment
       uses: marocchino/sticky-pull-request-comment@v2
       if: github.event_name == 'pull_request'
       with:
         recreate: true
         path: code-coverage-results.md
-    - name: Write to Job Summary
+    - name: Write to job summary
+      if: github.event_name == 'pull_request'
       run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
         
   integrationTests:
@@ -108,18 +109,19 @@ jobs:
       run: dotnet test ${{ inputs.dotnet_test_args }} --filter ${{ inputs.integration_test_filter }}
       
 #TODO: move to composite action
-    - name: Code Coverage Summary Report
+    - name: Code coverage summary report
       uses: irongut/CodeCoverageSummary@v1.3.0
       with:
         filename: coverage/*/coverage.cobertura.xml
         badge: true
         format: 'markdown'
         output: 'both'
-    - name: Add Coverage PR Comment
+    - name: Add coverage PR comment
       uses: marocchino/sticky-pull-request-comment@v2
       if: github.event_name == 'pull_request'
       with:
         recreate: true
         path: code-coverage-results.md
-    - name: Write to Job Summary
+    - name: Write to job summary
+      if: github.event_name == 'pull_request'
       run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
