@@ -130,10 +130,12 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: unit-tests-coverage
+          working-directory: coverage
       - name: Download integration tests coverage report
         uses: actions/download-artifact@v3
         with:
           name: integration-tests-coverage
+          working-directory: coverage
       - name: Display structure of downloaded files
         run: ls -R
 #TODO: move to composite action
