@@ -10,10 +10,6 @@ on:
         type: string
         required: false
         default: 3.x
-#       dotnet_tool_version:
-#         required: false
-#         default: 6.0.13
-#         type: string        
       dotnet_test_args:
         description: "Use for additional debugging purposes, i.e. '--blame-hang-timeout 30s' to check nonobvious issues"
         type: string
@@ -107,11 +103,9 @@ jobs:
   checkCodeCoverage:
     name: Check code coverage
     needs: [ unitTests, integrationTests ]
-#     if: ${{ inputs.execute_integration_tests }}
     runs-on: ubuntu-latest
     timeout-minutes: ${{ inputs.job_timeout }}
     steps:
-#     - uses: actions/checkout@v3
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
         with:
@@ -128,14 +122,12 @@ jobs:
         with:
           name: integration-tests-coverage
           path: coverage
-#       - name: Display structure of downloaded files
-#         run: ls -R
       - name: Merge coverage reports
-        run: dotnet-coverage merge coverage.cobertura.xml --recursive --output-format cobertura --output coverage.cobertura.xml
+        run: dotnet-coverage merge coverage.cobertura.xml --recursive --output-format cobertura --output merged-coverage.cobertura.xml
       - name: Code coverage summary report
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:
-          filename: coverage/*/coverage.cobertura.xml
+          filename: merged-coverage.cobertura.xml
           badge: true
           format: 'markdown'
           output: 'both'
