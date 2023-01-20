@@ -106,6 +106,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: ${{ inputs.job_timeout }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
         with:
@@ -123,14 +125,13 @@ jobs:
           name: integration-tests-coverage
           path: coverage
       - name: Merge coverage reports
-        run: dotnet-coverage merge coverage.cobertura.xml --recursive --output-format cobertura --output coverage/merged-coverage.cobertura.xml
-      - name: show files
-        run: ls -R
+        run: dotnet-coverage merge coverage.cobertura.xml --recursive --output-format cobertura --output merged-coverage.cobertura.xml
+#       - name: show files
+#         run: ls -R
       - name: Code coverage summary report
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:
-#           filename: ${{ github.workspace }}/merged-coverage.cobertura.xml
-          filename: coverage/merged-coverage.cobertura.xml
+          filename: merged-coverage.cobertura.xml
           badge: true
           format: 'markdown'
           output: 'both'
