@@ -125,13 +125,13 @@ jobs:
           name: integration-tests-coverage
           path: coverage
       - name: Merge coverage reports
-        run: dotnet-coverage merge coverage.cobertura.xml --recursive --output-format cobertura --output merged-coverage.cobertura.xml
+        run: dotnet-coverage merge coverage.cobertura.xml --recursive --output-format cobertura --output coverage/merged.coverage.cobertura.xml
 #       - name: show files
 #         run: ls -R
       - name: Code coverage summary report
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:
-          filename: coverage/*/coverage.cobertura.xml
+          filename: coverage/merged.coverage.cobertura.xml
           badge: true
           format: 'markdown'
           output: 'both'
