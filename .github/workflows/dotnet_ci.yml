@@ -79,10 +79,10 @@ jobs:
 
     - name: Run Unit and Integration Tests
       if: ${{ inputs.execute_integration_tests }}
-      run: dotnet test ${{ inputs.dotnet_test_args }} --filter '${{ inputs.unit_test_filter }}|${{ inputs.integration_test_filter }}'   
-    - name: Run Unit Tests
-      if: ${{ inputs.execute_integration_tests != 'true' }}
-      run: dotnet test ${{ inputs.dotnet_test_args }} --filter ${{ inputs.unit_test_filter }}
+      run: dotnet test ${{ inputs.dotnet_test_args }} --filter '${{ inputs.unit_test_filter }}|${{ inputs.execute_integration_tests && inputs.integration_test_filter }}'   
+    # - name: Run Unit Tests
+      # if: ${{ inputs.execute_integration_tests != 'true' }}
+      # run: dotnet test ${{ inputs.dotnet_test_args }} --filter ${{ inputs.unit_test_filter }}
     
     - name: show files
       run: ls -R
