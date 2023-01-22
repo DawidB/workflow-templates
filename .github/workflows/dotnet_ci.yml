@@ -15,14 +15,10 @@ on:
         type: string
         required: false
         default: '--no-build --verbosity normal --collect:"XPlat Code Coverage" --logger trx --results-directory coverage'
-      unit_test_filter:
+      tests_filter:
         type: string
         required: false
-        default: UnitTests
-      integration_test_filter:
-        type: string
-        required: false
-        default: IntegrationTests
+        default: '--filter UnitTests'
       integration_test_dir:
         description: "Subdirectory containing integration tests project"
         type: string
@@ -77,9 +73,9 @@ jobs:
       run: azurite-blob &
 #end setup of integration tests dependencies
 
-    - name: Run Unit and Integration Tests
+    - name: Run tests
       if: ${{ inputs.execute_integration_tests }}
-      run: dotnet test ${{ inputs.dotnet_test_args }} --filter '${{ inputs.unit_test_filter }}|${{ inputs.execute_integration_tests && inputs.integration_test_filter }}'   
+      run: dotnet test ${{ inputs.dotnet_test_args }} {{ !inputs.execute_integration_tests && inputs.tests_filter }}   
     # - name: Run Unit Tests
       # if: ${{ inputs.execute_integration_tests != 'true' }}
       # run: dotnet test ${{ inputs.dotnet_test_args }} --filter ${{ inputs.unit_test_filter }}
