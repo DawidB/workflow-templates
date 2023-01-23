@@ -75,11 +75,16 @@ jobs:
 
     - name: Run tests
       if: ${{ inputs.execute_integration_tests }}
-      run: dotnet test ${{ inputs.dotnet_test_args }} ${{ (inputs.execute_integration_tests == 'false' && inputs.tests_filter) || (inputs.execute_integration_tests && '') }}
+      run: dotnet test ${{ inputs.dotnet_test_args }} ${{ (inputs.execute_integration_tests == 'false' && inputs.tests_filter) || (inputs.execute_integration_tests == 'true' && '') }}
     # - name: Run Unit Tests
       # if: ${{ inputs.execute_integration_tests != 'true' }}
       # run: dotnet test ${{ inputs.dotnet_test_args }} --filter ${{ inputs.unit_test_filter }}
     
+    - name: Merge code coverage report
+      run: |
+        dotnet tool install -g dotnet-reportgenerator-globaltool
+        reportgenerator -reports:coverage/*/coverage.cobertura.xml -targetdir:coverage -reporttypes:'Cobertura'
+
     - name: show files
       run: ls -R
     - name: Code coverage summary report
