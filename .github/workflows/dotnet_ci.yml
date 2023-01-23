@@ -36,7 +36,7 @@ on:
 
 jobs:
   automation_tests:
-    name: Run unit/integration tests
+    name: Setup and run tests
     runs-on: ubuntu-latest
     timeout-minutes: ${{ inputs.job_timeout }}
     steps:
@@ -75,7 +75,7 @@ jobs:
 
     - name: Run tests
       if: ${{ inputs.execute_integration_tests }}
-      run: dotnet test ${{ inputs.dotnet_test_args }} {{ !inputs.execute_integration_tests && inputs.tests_filter }}   
+      run: dotnet test ${{ inputs.dotnet_test_args }} ${{ !inputs.execute_integration_tests && inputs.tests_filter }}   
     # - name: Run Unit Tests
       # if: ${{ inputs.execute_integration_tests != 'true' }}
       # run: dotnet test ${{ inputs.dotnet_test_args }} --filter ${{ inputs.unit_test_filter }}
