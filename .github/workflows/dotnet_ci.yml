@@ -52,7 +52,7 @@ jobs:
 
 #setup integration tests dependencies
     - name: Create AppSettings.json
-      if: inputs.execute_integration_tests == true
+      if: inputs.execute_integration_tests
       shell: pwsh
       run: |
         cd ${{ inputs.integration_test_dir }}
@@ -62,27 +62,27 @@ jobs:
         $json = $contents | ConvertFrom-Json
         $json | ConvertTo-Json | Out-File "appsettings.json"
     - name: Setup Node.js environment
-      if: inputs.execute_integration_tests == true
+      if: inputs.execute_integration_tests
       uses: actions/setup-node@v3
     - name: Install & run Azurite
-      if: inputs.execute_integration_tests == true
+      if: inputs.execute_integration_tests
       run: npm install -g azurite
     - name: Run Azurite in Background
-      if: inputs.execute_integration_tests == true
+      if: inputs.execute_integration_tests
       shell: bash
       run: azurite-blob &
 #end setup of integration tests dependencies
 
     - name: Run tests
-      run: dotnet test ${{ inputs.dotnet_test_args }} ${{ (inputs.execute_integration_tests != true && inputs.tests_filter) || (inputs.execute_integration_tests == true && '') }}
+      run: dotnet test ${{ inputs.dotnet_test_args }} ${{ (!inputs.execute_integration_tests && inputs.tests_filter) || (inputs.execute_integration_tests && '') }}
     
     - name: Merge code coverage report
-      if: inputs.execute_integration_tests == true
+      if: inputs.execute_integration_tests
       run: |
         dotnet tool install -g dotnet-reportgenerator-globaltool
         reportgenerator -reports:coverage/*/coverage.cobertura.xml -targetdir:coverage -reporttypes:'Cobertura'
     - name: Code coverage summary report
-      if: inputs.execute_integration_tests == true
+      if: inputs.execute_integration_tests
       uses: irongut/CodeCoverageSummary@v1.3.0
       with:
         filename: coverage/Cobertura.xml
@@ -91,12 +91,12 @@ jobs:
         output: 'both'
     - name: Add coverage PR comment
       uses: marocchino/sticky-pull-request-comment@v2
-      if: github.event_name == 'pull_request' && inputs.execute_integration_tests == true
+      if: github.event_name == 'pull_request' && inputs.execute_integration_tests
       with:
         recreate: true
         path: code-coverage-results.md
     - name: Write to job summary
-      if: github.event_name == 'pull_request' && inputs.execute_integration_tests == true
+      if: github.event_name == 'pull_request' && inputs.execute_integration_tests
       run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
 
     
