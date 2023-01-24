@@ -9,20 +9,16 @@ on:
       dotnet_version:
         type: string
         required: false
-        default: 3.x        
+        default: 3.x
       dotnet_test_args:
         description: "Use for additional debugging purposes, i.e. '--blame-hang-timeout 30s' to check nonobvious issues"
         type: string
         required: false
-        default: "--no-build --verbosity normal"
-      unit_test_filter:
+        default: '--no-build --verbosity normal --collect:"XPlat Code Coverage" --logger trx --results-directory coverage'
+      tests_filter:
         type: string
         required: false
-        default: UnitTests
-      integration_test_filter:
-        type: string
-        required: false
-        default: IntegrationTests
+        default: '--filter UnitTests'
       integration_test_dir:
         description: "Subdirectory containing integration tests project"
         type: string
@@ -39,8 +35,8 @@ on:
         required: true
 
 jobs:
-  unitTests:
-    name: Run unit tests
+  automation_tests:
+    name: Run tests and check code coverage
     runs-on: ubuntu-latest
     timeout-minutes: ${{ inputs.job_timeout }}
     steps:
@@ -53,17 +49,10 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
-    - name: Run Unit Tests
-      run: dotnet test ${{ inputs.dotnet_test_args }} --filter ${{ inputs.unit_test_filter }}
-        
-  integrationTests:
-    name: Run integration tests
-    if: ${{ inputs.execute_integration_tests }}
-    runs-on: ubuntu-latest
-    timeout-minutes: ${{ inputs.job_timeout }}
-    steps:
-    - uses: actions/checkout@v3
+
+    #setup integration tests dependencies
     - name: Create AppSettings.json
+      if: inputs.execute_integration_tests
       shell: pwsh
       run: |
         cd ${{ inputs.integration_test_dir }}
@@ -72,20 +61,43 @@ jobs:
         "@
         $json = $contents | ConvertFrom-Json
         $json | ConvertTo-Json | Out-File "appsettings.json"
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v2
-      with:
-        dotnet-version: ${{ inputs.dotnet_version }}
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
     - name: Setup Node.js environment
+      if: inputs.execute_integration_tests
       uses: actions/setup-node@v3
     - name: Install & run Azurite
+      if: inputs.execute_integration_tests
       run: npm install -g azurite
     - name: Run Azurite in Background
+      if: inputs.execute_integration_tests
       shell: bash
       run: azurite-blob &
-    - name: Run Integration Tests
-      run: dotnet test ${{ inputs.dotnet_test_args }} --filter ${{ inputs.integration_test_filter }}
+    #end setup of integration tests dependencies
+
+    - name: Run tests
+      run: dotnet test ${{ inputs.dotnet_test_args }} ${{ (!inputs.execute_integration_tests && inputs.tests_filter) || (inputs.execute_integration_tests && '') }}
+    
+    #publish test results
+    - name: Merge code coverage report
+      if: inputs.execute_integration_tests
+      run: |
+        dotnet tool install -g dotnet-reportgenerator-globaltool
+        reportgenerator -reports:coverage/*/coverage.cobertura.xml -targetdir:coverage -reporttypes:'Cobertura'
+    - name: Code coverage summary report
+      if: inputs.execute_integration_tests
+      uses: irongut/CodeCoverageSummary@v1.3.0
+      with:
+        filename: coverage/Cobertura.xml
+        badge: true
+        format: 'markdown'
+        output: 'both'
+        fail_below_min: true
+        thresholds: '90 100'
+    - name: Add coverage PR comment
+      uses: marocchino/sticky-pull-request-comment@v2
+      if: github.event_name == 'pull_request'
+      with:
+        recreate: true
+        path: code-coverage-results.md
+    - name: Write to job summary
+      if: github.event_name == 'pull_request'
+      run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
