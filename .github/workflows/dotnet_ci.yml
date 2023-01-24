@@ -50,7 +50,7 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
 
-#setup integration tests dependencies
+    #setup integration tests dependencies
     - name: Create AppSettings.json
       if: inputs.execute_integration_tests
       shell: pwsh
@@ -71,11 +71,12 @@ jobs:
       if: inputs.execute_integration_tests
       shell: bash
       run: azurite-blob &
-#end setup of integration tests dependencies
+    #end setup of integration tests dependencies
 
     - name: Run tests
       run: dotnet test ${{ inputs.dotnet_test_args }} ${{ (!inputs.execute_integration_tests && inputs.tests_filter) || (inputs.execute_integration_tests && '') }}
     
+    #publish test results
     - name: Merge code coverage report
       if: inputs.execute_integration_tests
       run: |
@@ -89,119 +90,14 @@ jobs:
         badge: true
         format: 'markdown'
         output: 'both'
+        fail_below_min: true
+        thresholds: '90 100'
     - name: Add coverage PR comment
       uses: marocchino/sticky-pull-request-comment@v2
-      if: github.event_name == 'pull_request' && inputs.execute_integration_tests
+      if: github.event_name == 'pull_request'
       with:
         recreate: true
         path: code-coverage-results.md
     - name: Write to job summary
-      if: github.event_name == 'pull_request' && inputs.execute_integration_tests
+      if: github.event_name == 'pull_request'
       run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
-
-    
-  # unitTests:
-  #   name: Run unit tests
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: ${{ inputs.job_timeout }}
-  #   steps:
-  #   - uses: actions/checkout@v3
-  #   - name: Setup .NET
-  #     uses: actions/setup-dotnet@v2
-  #     with:
-  #       dotnet-version: ${{ inputs.dotnet_version }}
-  #   - name: Restore dependencies
-  #     run: dotnet restore
-  #   - name: Build
-  #     run: dotnet build --no-restore    
-  #   - name: Run Unit Tests
-  #     run: dotnet test ${{ inputs.dotnet_test_args }} --filter ${{ inputs.unit_test_filter }}
-  #   - name: Upload coverage reports
-  #     uses: actions/upload-artifact@v3
-  #     with:
-  #       name: unit-tests-coverage
-  #       path: coverage/*/coverage.cobertura.xml
-        
-  # integrationTests:
-  #   name: Run integration tests
-  #   if: ${{ inputs.execute_integration_tests }}
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: ${{ inputs.job_timeout }}
-  #   steps:
-  #   - uses: actions/checkout@v3
-  #   - name: Create AppSettings.json
-  #     shell: pwsh
-  #     run: |
-  #       cd ${{ inputs.integration_test_dir }}
-  #       $contents = @"
-  #         ${{ secrets.integration_tests_appsettings }}
-  #       "@
-  #       $json = $contents | ConvertFrom-Json
-  #       $json | ConvertTo-Json | Out-File "appsettings.json"
-  #   - name: Setup .NET
-  #     uses: actions/setup-dotnet@v2
-  #     with:
-  #       dotnet-version: ${{ inputs.dotnet_version }}
-  #   - name: Restore dependencies
-  #     run: dotnet restore
-  #   - name: Build
-  #     run: dotnet build --no-restore
-  #   - name: Setup Node.js environment
-  #     uses: actions/setup-node@v3
-  #   - name: Install & run Azurite
-  #     run: npm install -g azurite
-  #   - name: Run Azurite in Background
-  #     shell: bash
-  #     run: azurite-blob &
-  #   - name: Run Integration Tests
-  #     run: dotnet test ${{ inputs.dotnet_test_args }} --filter ${{ inputs.integration_test_filter }}
-  #   - name: Upload coverage reports
-  #     uses: actions/upload-artifact@v3
-  #     with:
-  #       name: integration-tests-coverage
-  #       path: coverage/*/coverage.cobertura.xml
-      
-#   checkCodeCoverage:
-#     name: Check code coverage
-#     needs: [ unitTests, integrationTests ]
-#     runs-on: ubuntu-latest
-#     timeout-minutes: ${{ inputs.job_timeout }}
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v3
-#       - name: Setup .NET
-#         uses: actions/setup-dotnet@v2
-#         with:
-#           dotnet-version: ${{ inputs.dotnet_version }}
-#       - name: Install dotNET Coverage tool
-#         run: dotnet tool install --global dotnet-coverage
-#       - name: Download unit tests coverage report
-#         uses: actions/download-artifact@v3
-#         with:
-#           name: unit-tests-coverage
-#           path: coverage
-#       - name: Download integration tests coverage report
-#         uses: actions/download-artifact@v3
-#         with:
-#           name: integration-tests-coverage
-#           path: coverage
-#       - name: Merge coverage reports
-#         run: dotnet-coverage merge coverage.cobertura.xml --recursive --output-format cobertura --output coverage/coverage.cobertura.xml
-# #       - name: show files
-# #         run: ls -R
-#       - name: Code coverage summary report
-#         uses: irongut/CodeCoverageSummary@v1.3.0
-#         with:
-#           filename: coverage/coverage.cobertura.xml
-#           badge: true
-#           format: 'markdown'
-#           output: 'both'
-#       - name: Add coverage PR comment
-#         uses: marocchino/sticky-pull-request-comment@v2
-#         if: github.event_name == 'pull_request'
-#         with:
-#           recreate: true
-#           path: code-coverage-results.md
-#       - name: Write to job summary
-#         if: github.event_name == 'pull_request'
-#         run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
