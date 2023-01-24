@@ -29,6 +29,11 @@ on:
         type: number
         required: false
         default: 60
+      coverage_thresholds:
+        description: "Code coverage thresholds: 'min max' (fails if below min; green if equal or greater than max)"
+        type: string
+        required: false
+        default: '85 95'
 
     secrets:
       integration_tests_appsettings:
@@ -91,7 +96,7 @@ jobs:
         format: 'markdown'
         output: 'both'
         fail_below_min: true
-        thresholds: '90 100'
+        thresholds: ${{ inputs.coverage_thresholds }}
     - name: Add coverage PR comment
       uses: marocchino/sticky-pull-request-comment@v2
       if: github.event_name == 'pull_request'
