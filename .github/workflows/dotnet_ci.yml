@@ -74,7 +74,7 @@ jobs:
 #end setup of integration tests dependencies
 
     - name: Run tests
-      run: dotnet test ${{ inputs.dotnet_test_args }} ${{ (inputs.execute_integration_tests != 'true' && inputs.tests_filter) || (inputs.execute_integration_tests == 'true' && '') }}
+      run: dotnet test ${{ inputs.dotnet_test_args }} ${{ (inputs.execute_integration_tests != true && inputs.tests_filter) || (inputs.execute_integration_tests == true && '') }}
     
     - name: Merge code coverage report
       if: inputs.execute_integration_tests
