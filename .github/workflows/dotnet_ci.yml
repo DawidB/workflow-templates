@@ -61,6 +61,9 @@ jobs:
       shell: pwsh
       run: |
         cd ${{ inputs.integration_test_dir }}
+        pwd
+        ls
+        
         $contents = @"
           ${{ secrets.integration_tests_appsettings }}
         "@
