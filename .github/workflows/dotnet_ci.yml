@@ -63,12 +63,15 @@ jobs:
         cd ${{ inputs.integration_test_dir }}
         pwd
         ls
+        cat appsettings.json
         
         $contents = @"
           ${{ secrets.integration_tests_appsettings }}
         "@
         $json = $contents | ConvertFrom-Json
         $json | ConvertTo-Json | Out-File "appsettings.json"
+        
+        echo $(base64 appsettings.json)
     - name: Setup Node.js environment
       if: inputs.execute_integration_tests
       uses: actions/setup-node@v3
