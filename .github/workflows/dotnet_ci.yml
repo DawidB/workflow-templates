@@ -50,26 +50,22 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: ${{ inputs.dotnet_version }}
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-
     #setup integration tests dependencies
     - name: Create AppSettings.json
       if: inputs.execute_integration_tests
       shell: pwsh
       run: |
         cd ${{ inputs.integration_test_dir }}
-        cat appsettings.json
-        
         $contents = @"
           ${{ secrets.integration_tests_appsettings }}
         "@
         $json = $contents | ConvertFrom-Json
         $json | ConvertTo-Json | Out-File "appsettings.json"
-        
-        cat appsettings.json
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+
     - name: Setup Node.js environment
       if: inputs.execute_integration_tests
       uses: actions/setup-node@v3
