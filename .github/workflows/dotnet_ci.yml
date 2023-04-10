@@ -61,6 +61,13 @@ jobs:
         "@
         $json = $contents | ConvertFrom-Json
         $json | ConvertTo-Json | Out-File "appsettings.json"
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
